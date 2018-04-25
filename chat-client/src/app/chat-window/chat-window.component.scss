@@ -1,0 +1,26 @@
+.lc-msg-area {
+    height: 200px;
+}
+
+.lc-avatar {
+    height: 40px;
+    width: 40px;
+    text-align: center;
+    line-height: 39px;
+}
+
+.self .lc-msg-wrapper {
+    margin-right: 45px;
+}
+
+.self .lc-avatar {
+    float: right;
+}
+
+.other .lc-avatar {
+    float: left;
+}
+
+.other .lc-msg-wrapper {
+    margin-left: 45px;
+}

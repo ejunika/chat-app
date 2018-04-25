@@ -1,0 +1,35 @@
+<div class="card d-inline-block mb-2 mr-3" style="width: 300px" ngDraggable [handle]="cwHandle">
+  <div #cwHandle class="card-header">
+    <span *ngIf="chatWindow.activityStatus == 'online'" class="badge badge-success mr-1 rounded-circle text-success">
+      0
+    </span>
+    {{toUserNames}}
+    <a class="pull-right" href="javascript:;;" (click)="close()">
+      <i class="fa fa-times"></i>
+    </a>
+  </div>
+  <div class="card-body p-1">
+    <ul class="list-unstyled lc-msg-area">
+      <li class="mb-1" [ngClass]="{'self': message.self == true, 'other': message.self == false}" 
+        *ngFor="let message of chatWindow.messageBox">
+        <div class="bg-light lc-avatar rounded-circle">
+          <i class="fa fa-user"></i>
+        </div>
+        <div class="bg-light lc-msg-wrapper p-2">
+          {{message.body}}
+        </div>
+      </li>
+    </ul>
+    <form>
+      <div class="form-group mb-0">
+        <input type="text" 
+          class="form-control" 
+          [(ngModel)]="messageBody" 
+          name="messageBody"
+          (keyup.enter)="sendMessage(messageBody)"
+          id="message_{{toUserNames}}" 
+          placeholder="Message @{{toUserNames}}">
+        </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<nav class="lc-side-nav ml-3" style="width: 300px;">
+  <ul class="list-group">
+    <li *ngFor="let olUser of onlineUsers" (click)="selectUser(olUser)" class="list-group-item d-flex justify-content-between align-items-center">
+      {{olUser.userName}}
+      <span class="badge badge-success badge-pill">
+        {{rumCount}}
+      </span>
+    </li>
+  </ul>
+</nav>

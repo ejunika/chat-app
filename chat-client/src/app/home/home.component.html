@@ -1,0 +1,18 @@
+<app-main-nav [currentUser]="currentUser"></app-main-nav>
+<div class="app-body d-flex">
+  <app-side-nav [rumCount]="rumCount" 
+    (onSelectUser)="onSelectUser($event)" 
+    [onlineUsers]="onlineUsers">
+  </app-side-nav>
+  <main class="app-main" style="width: 100%">
+    <div class="container-fluid">
+        <div class="d-inline-block" *ngFor="let chatWindow of chatWindows">
+            <div *ngIf="chatWindow.visible" class="lc-chat-win-wrapper d-inline-block">
+              <app-chat-window (onSendMessage)="onSendMessage($event)" 
+                [chatWindow]="chatWindow">
+              </app-chat-window>
+            </div>
+          </div>
+    </div>
+  </main>
+</div>
