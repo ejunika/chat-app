@@ -10,25 +10,25 @@ class ChatController {
         this.listen();
     }
     updateUserSockets(userName, socket) {
-        let sockets;
+        let socketIds;
         if (!this.userSocket.has(userName)) {
-            sockets = [];
+            socketIds = [];
             this.onlineUsers.push(new user_model_1.User(userName, user_model_1.ACTIVITY_STATUS.ONLINE));
         }
         else {
-            sockets = this.userSocket.get(userName);
+            socketIds = this.userSocket.get(userName);
         }
-        sockets.push(socket);
-        this.userSocket.set(userName, sockets);
+        socketIds.push(socket.id);
+        this.userSocket.set(userName, socketIds);
         this.socketUser.set(socket.id, userName);
         this.notifyAllUsers(Events.ONLINE_USER);
     }
     removeUserSocket(socketId) {
         let userName = this.socketUser.get(socketId);
-        let sockets = this.userSocket.get(userName);
-        sockets = sockets && sockets.filter((socket) => socket.id != socketId);
-        if (sockets && sockets.length > 0) {
-            this.userSocket.set(userName, sockets);
+        let socketIds = this.userSocket.get(userName);
+        socketIds = socketIds && socketIds.filter((sId) => sId != socketId);
+        if (socketIds && socketIds.length > 0) {
+            this.userSocket.set(userName, socketIds);
         }
         else {
             this.userSocket.delete(userName);
@@ -39,17 +39,17 @@ class ChatController {
         }
         this.notifyAllUsers(Events.ONLINE_USER);
     }
-    getUserSocket(userName) {
+    getUserSocketIds(userName) {
         return this.userSocket.get(userName);
     }
     sendAcknowledgement(ack) {
-        let sockets;
+        let socketIds;
         let to = ack.to;
         if (to) {
             for (let i = 0; i < to.length; i++) {
-                sockets = this.getUserSocket(to[i].userName);
-                for (let j = 0; j < sockets.length; j++) {
-                    sockets[j].emit(Events.ACKNOWLEDGE, ack);
+                socketIds = this.getUserSocketIds(to[i].userName);
+                for (let j = 0; j < socketIds.length; j++) {
+                    this.io.to(socketIds[j]).emit(Events.ACKNOWLEDGE, ack);
                 }
             }
         }
@@ -58,14 +58,14 @@ class ChatController {
         }
     }
     dispatchMessage(m) {
-        let sockets;
+        let socketIds;
         let to = m.to;
         let from = m.from;
         if (to) {
             for (let i = 0; i < to.length; i++) {
-                sockets = this.getUserSocket(to[i].userName);
-                for (let j = 0; j < sockets.length; j++) {
-                    sockets[j].emit(Events.MESSAGE, m);
+                socketIds = this.getUserSocketIds(to[i].userName);
+                for (let j = 0; j < socketIds.length; j++) {
+                    this.io.to(socketIds[j]).emit(Events.MESSAGE, m);
                 }
             }
         }

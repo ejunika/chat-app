@@ -5,6 +5,7 @@ import * as path from 'path';
 import * as cookieParser from 'cookie-parser';
 import errorHandler = require('errorhandler');
 import methodOverride = require('method-override');
+import { createPool, Pool, Connection, MysqlError, PoolConnection, FieldInfo } from 'mysql';
 
 import { IndexRoute } from './routes'
 import { SocketServer } from './socket/socket-server';
@@ -21,7 +22,7 @@ export class Server {
         this.app = express();
         this.initConfig();
         this.initRoutes();
-        this.initAPIs();
+        //this.initConnectionPool();
         new SocketServer();
     }
 
@@ -51,6 +52,26 @@ export class Server {
         this.app.use(router);
     }
 
-    initAPIs() {}
+    initConnectionPool(): void {
+        let pool: Pool = createPool({
+            host: 'localhost',
+            port: 3306,
+            user: 'root',
+            password: 'Admin',
+            database: 'ezportal',
+            connectionLimit: 5
+        });
+        pool.getConnection((err: MysqlError, connection: PoolConnection) => {
+            if (err) throw err;
+            connection.query('SELECT * FROM users', (err: MysqlError, result: any, fields: Array<FieldInfo>) => {
+                if (err) {
+                    connection.release();
+                    throw err;
+                }
+                console.log(result);
+                connection.release();
+            });
+        });
+    }
 
 }

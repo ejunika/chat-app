@@ -5,7 +5,7 @@ import { ChatMessage, Acknowledgement } from '../../models/chart-message.model';
 
 export class ChatController {
 
-    userSocket: Map<string, Array<socketIO.Socket>>;
+    userSocket: Map<string, Array<string>>;
 
     socketUser: Map<string, string>;
 
@@ -19,25 +19,25 @@ export class ChatController {
     }
 
     updateUserSockets(userName: string, socket: socketIO.Socket) {
-        let sockets: socketIO.Socket[];
+        let socketIds: Array<string>;
         if (!this.userSocket.has(userName)) {
-            sockets = [];
+            socketIds = [];
             this.onlineUsers.push(new User(userName, ACTIVITY_STATUS.ONLINE));
         } else {
-            sockets = this.userSocket.get(userName);
+            socketIds = this.userSocket.get(userName);
         }
-        sockets.push(socket);
-        this.userSocket.set(userName, sockets);
+        socketIds.push(socket.id);
+        this.userSocket.set(userName, socketIds);
         this.socketUser.set(socket.id, userName);
         this.notifyAllUsers(Events.ONLINE_USER);
     }
 
     removeUserSocket(socketId: string) {
         let userName: string = this.socketUser.get(socketId);
-        let sockets: socketIO.Socket[] = this.userSocket.get(userName);
-        sockets = sockets && sockets.filter((socket) => socket.id != socketId);
-        if (sockets && sockets.length > 0) {
-            this.userSocket.set(userName, sockets);
+        let socketIds: Array<string> = this.userSocket.get(userName);
+        socketIds = socketIds && socketIds.filter((sId) => sId != socketId);
+        if (socketIds && socketIds.length > 0) {
+            this.userSocket.set(userName, socketIds);
         } else {
             this.userSocket.delete(userName);
         }
@@ -48,18 +48,18 @@ export class ChatController {
         this.notifyAllUsers(Events.ONLINE_USER);
     }
 
-    getUserSocket(userName: string): Array<socketIO.Socket> {
+    getUserSocketIds(userName: string): Array<string> {
         return this.userSocket.get(userName);
     }
 
     sendAcknowledgement(ack: Acknowledgement) {
-        let sockets: socketIO.Socket[];
+        let socketIds: Array<string>;
         let to: Array<User> = ack.to;
         if (to) {
             for (let i = 0; i < to.length; i++) {
-                sockets = this.getUserSocket(to[i].userName);
-                for (let j = 0; j < sockets.length; j++) {
-                    sockets[j].emit(Events.ACKNOWLEDGE, ack);
+                socketIds = this.getUserSocketIds(to[i].userName);
+                for (let j = 0; j < socketIds.length; j++) {
+                    this.io.to(socketIds[j]).emit(Events.ACKNOWLEDGE, ack);
                 }
             }
         } else {
@@ -68,14 +68,14 @@ export class ChatController {
     }
 
     dispatchMessage(m: Message) {
-        let sockets: socketIO.Socket[];
+        let socketIds: Array<string>;
         let to: Array<User> = m.to;
         let from: User = m.from;
         if (to) {
             for (let i = 0; i < to.length; i++) {
-                sockets = this.getUserSocket(to[i].userName);
-                for (let j = 0; j < sockets.length; j++) {
-                    sockets[j].emit(Events.MESSAGE, m);
+                socketIds = this.getUserSocketIds(to[i].userName);
+                for (let j = 0; j < socketIds.length; j++) {
+                    this.io.to(socketIds[j]).emit(Events.MESSAGE, m);
                 }
             }
         } else {

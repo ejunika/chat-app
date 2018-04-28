@@ -7,6 +7,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const errorHandler = require("errorhandler");
 const methodOverride = require("method-override");
+const mysql_1 = require("mysql");
 const routes_1 = require("./routes");
 const socket_server_1 = require("./socket/socket-server");
 class Server {
@@ -17,7 +18,7 @@ class Server {
         this.app = express();
         this.initConfig();
         this.initRoutes();
-        this.initAPIs();
+        //this.initConnectionPool();
         new socket_server_1.SocketServer();
     }
     initConfig() {
@@ -41,6 +42,27 @@ class Server {
         routes_1.IndexRoute.create(router);
         this.app.use(router);
     }
-    initAPIs() { }
+    initConnectionPool() {
+        let pool = mysql_1.createPool({
+            host: 'localhost',
+            port: 3306,
+            user: 'root',
+            password: 'Admin',
+            database: 'ezportal',
+            connectionLimit: 5
+        });
+        pool.getConnection((err, connection) => {
+            if (err)
+                throw err;
+            connection.query('SELECT * FROM users', (err, result, fields) => {
+                if (err) {
+                    connection.release();
+                    throw err;
+                }
+                console.log(result);
+                connection.release();
+            });
+        });
+    }
 }
 exports.Server = Server;
